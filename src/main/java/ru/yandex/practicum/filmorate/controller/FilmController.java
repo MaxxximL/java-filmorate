@@ -42,5 +42,6 @@ public class FilmController {
     public List<Film> getAllFilms() {
         log.info("Запрошены все фильмы");
         return films;
+
     }
 }
