@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
 
-    private  final static Logger log = LoggerFactory.getLogger(FilmController.class);
+    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private final List<Film> films = new ArrayList<>();
     private int filmIdCounter = 1;
 
