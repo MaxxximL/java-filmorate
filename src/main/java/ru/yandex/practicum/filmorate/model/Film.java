@@ -4,17 +4,18 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 @Getter
 @Setter
-@EqualsAndHashCode(of = {"id"})
 @ToString
 public class Film {
+
     private int id;
 
     @NotBlank(message = "Название не может быть пустым.")
@@ -27,4 +28,14 @@ public class Film {
 
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
     private long duration;
+
+
+    // Методы getId и setId
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }
