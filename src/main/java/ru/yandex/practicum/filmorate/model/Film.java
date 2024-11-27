@@ -2,18 +2,12 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-import lombok.*;
-
 import jakarta.validation.constraints.Size;
+import lombok.Data;
+
 import java.time.LocalDate;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(of = {"id"})
-@Getter
-@Setter
-@ToString
 public class Film {
 
     private int id;
@@ -28,14 +22,4 @@ public class Film {
 
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
     private long duration;
-
-
-    // Методы getId и setId
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 }
