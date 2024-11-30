@@ -20,6 +20,7 @@ public class User {
     @Size(min = 1, message = "Логин не может быть пустым.")
     private String login;
 
+    @NotBlank(message = "Имя не может быть пустым.")
     private String name;
 
     @Past(message = "Дата рождения не может быть в будущем.")
