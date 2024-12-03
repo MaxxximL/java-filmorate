@@ -3,82 +3,79 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
-class UserControllerTest {
+public class UserControllerTest {
 
     private UserController userController;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         userController = new UserController();
     }
 
     @Test
-    void createUser() {
+    public void testCreateUser_success() {
         User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testlogin");
-        user.setName("Тестовый пользователь");
-        user.setBirthday(LocalDate.of(2000, 1, 1));
+        user.setName("Test User");
+        user.setEmail("test.user@example.com");
+        user.setLogin("testuser");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
         User createdUser = userController.createUser(user);
 
-        assertThat(createdUser.getId()).isEqualTo(1); // Первый пользователь с ID 1
-        assertThat(createdUser.getEmail()).isEqualTo(user.getEmail());
+        assertNotNull(createdUser);
+        assertEquals("Test User", createdUser.getName());
+        assertEquals(1, createdUser.getId()); // Проверка ID
     }
 
     @Test
-    void updateUser() {
+    public void testUpdateUser_success() {
         User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testlogin");
-        user.setName("Тестовый пользователь");
-        user.setBirthday(LocalDate.of(2000, 1, 1));
+        user.setName("Test User");
+        user.setEmail("test.user@example.com");
+        user.setLogin("testuser");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        User createdUser = userController.createUser(user);
-        createdUser.setName("Обновленный пользователь");
+        userController.createUser(user);
 
-        User updatedUser = userController.updateUser(createdUser);
+        user.setName("Updated Name");
+        User updatedUser = userController.updateUser(user);
 
-        assertThat(updatedUser.getName()).isEqualTo("Обновленный пользователь");
+        assertNotNull(updatedUser);
+        assertEquals("Updated Name", updatedUser.getName());
     }
 
     @Test
-    void updateNonExistentUser() {
+    public void testGetAllUsers() {
         User user = new User();
-        user.setId(999); // Не существующий ID
-        user.setEmail("notfound@example.com");
+        user.setName("Test User");
+        user.setEmail("test.user@example.com");
+        user.setLogin("testuser");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        assertThrows(ValidationException.class, () -> userController.updateUser(user));
+        userController.createUser(user);
+
+        List<User> users = userController.getAllUsers();
+
+        assertNotNull(users);
+        assertEquals(1, users.size());
     }
 
     @Test
-    void getAllUsers() {
-        User user1 = new User();
-        user1.setEmail("user1@example.com");
-        user1.setLogin("user1");
-        user1.setName("Пользователь 1");
-        user1.setBirthday(LocalDate.of(1995, 1, 1));
-        userController.createUser(user1);
+    public void testUpdateUser_notFound() {
+        User user = new User();
+        user.setId(99); // ID не существует
+        Exception exception = assertThrows(ValidationException.class, () -> {
+            userController.updateUser(user);
+        });
 
-        User user2 = new User();
-        user2.setEmail("user2@example.com");
-        user2.setLogin("user2");
-        user2.setName("Пользователь 2");
-        user2.setBirthday(LocalDate.of(1996, 1, 1));
-        userController.createUser(user2);
-
-        List<User> allUsers = userController.getAllUsers();
-
-        assertThat(allUsers).hasSize(2);
-        assertThat(allUsers).contains(user1, user2);
+        assertEquals("Пользователь с ID 99 не найден.", exception.getMessage());
     }
 }

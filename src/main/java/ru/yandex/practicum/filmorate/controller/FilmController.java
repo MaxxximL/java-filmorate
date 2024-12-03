@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -14,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/films")
-@Validated
 public class FilmController {
 
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
