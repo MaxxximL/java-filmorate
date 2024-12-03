@@ -1,17 +1,19 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import jakarta.validation.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@Validated
 public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
@@ -20,6 +22,9 @@ public class UserController {
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
+        if (user.getName() == null || user.getName().isEmpty()) {
+            throw new ValidationException("Имя не может быть пустым.");
+        }
         user.setId(userIdCounter++);
         users.add(user);
         log.info("Добавлен пользователь: {}", user);

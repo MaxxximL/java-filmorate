@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -77,5 +77,35 @@ public class FilmControllerTest {
         });
 
         assertEquals("Фильм с ID 99 не найден.", exception.getMessage());
+    }
+
+    @Test
+    public void testFilmCreateFailReleaseDate() {
+        Film film = new Film();
+        film.setName("Film Name");
+        film.setDescription("Description");
+        film.setReleaseDate(LocalDate.of(3000, 1, 1)); // Дата в будущем
+        film.setDuration(100);
+
+        Exception exception = assertThrows(ValidationException.class, () -> {
+            filmController.addFilm(film);
+        });
+
+        assertEquals("Дата выхода фильма не может быть в будущем.", exception.getMessage());
+    }
+
+    @Test
+    public void testFilmCreateFailDuration() {
+        Film film = new Film();
+        film.setName("Film Name");
+        film.setDescription("Description");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(-10); // Отрицательная продолжительность
+
+        Exception exception = assertThrows(ValidationException.class, () -> {
+            filmController.addFilm(film);
+        });
+
+        assertEquals("Продолжительность фильма должна быть положительным числом.", exception.getMessage());
     }
 }

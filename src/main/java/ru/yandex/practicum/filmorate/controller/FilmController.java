@@ -1,13 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import jakarta.validation.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,13 @@ public class FilmController {
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
+        if (film.getReleaseDate() == null || film.getReleaseDate().isAfter(LocalDate.now())) {
+            throw new ValidationException("Дата выхода фильма не может быть в будущем.");
+        }
+        if (film.getDuration() <= 0) {
+            throw new ValidationException("Продолжительность фильма должна быть положительным числом.");
+        }
+
         film.setId(filmIdCounter++);
         films.add(film);
         log.info("Добавлен фильм: {}", film);

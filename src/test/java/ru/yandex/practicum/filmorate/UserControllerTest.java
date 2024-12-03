@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -72,10 +72,21 @@ public class UserControllerTest {
     public void testUpdateUser_notFound() {
         User user = new User();
         user.setId(99); // ID не существует
-        Exception exception = assertThrows(ValidationException.class, () -> {
-            userController.updateUser(user);
-        });
+        Exception exception = assertThrows(ValidationException.class, () -> userController.updateUser(user));
 
         assertEquals("Пользователь с ID 99 не найден.", exception.getMessage());
+    }
+
+    @Test
+    public void testCreateUserWithEmptyName() {
+        User user = new User();
+        user.setEmail("test.user@gmail.com");
+        user.setLogin("testuser");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+        user.setName(""); // Имя пустое
+
+        ValidationException exception = assertThrows(ValidationException.class, () -> userController.createUser(user));
+
+        assertEquals("Имя не может быть пустым.", exception.getMessage());
     }
 }
