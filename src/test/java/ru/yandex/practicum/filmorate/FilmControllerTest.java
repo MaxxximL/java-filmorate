@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate;
 
-import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -72,9 +72,7 @@ public class FilmControllerTest {
     public void testUpdateFilm_notFound() {
         Film film = new Film();
         film.setId(99); // ID не существует
-        Exception exception = assertThrows(ValidationException.class, () -> {
-            filmController.updateFilm(film);
-        });
+        Exception exception = assertThrows(jakarta.validation.ValidationException.class, () -> filmController.updateFilm(film));
 
         assertEquals("Фильм с ID 99 не найден.", exception.getMessage());
     }
@@ -87,9 +85,7 @@ public class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(3000, 1, 1)); // Дата в будущем
         film.setDuration(100);
 
-        Exception exception = assertThrows(ValidationException.class, () -> {
-            filmController.addFilm(film);
-        });
+        Exception exception = assertThrows(ValidationException.class, () -> filmController.addFilm(film));
 
         assertEquals("Дата выхода фильма не может быть в будущем.", exception.getMessage());
     }
@@ -102,9 +98,7 @@ public class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(-10); // Отрицательная продолжительность
 
-        Exception exception = assertThrows(ValidationException.class, () -> {
-            filmController.addFilm(film);
-        });
+        Exception exception = assertThrows(ValidationException.class, () -> filmController.addFilm(film));
 
         assertEquals("Продолжительность фильма должна быть положительным числом.", exception.getMessage());
     }

@@ -13,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@Valid
 @Validated
 public class UserController {
 
