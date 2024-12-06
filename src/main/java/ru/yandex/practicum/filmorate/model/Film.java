@@ -13,15 +13,17 @@ public class Film {
 
     private int id;
 
-    @NotBlank(message = "Название не может быть пустым.")
+    @NotBlank
     private String name;
 
-    @Size(max = 200, message = "Максимальная длина описания — 200 символов.")
+    @Size
     private String description;
 
-    @PastOrPresent(message = "Дата выхода фильма не может быть в будущем.")
+    @PastOrPresent
     private LocalDate releaseDate;
 
-    @Positive(message = "Продолжительность фильма должна быть положительным числом.")
+    @Positive
     private long duration;
+
+
 }

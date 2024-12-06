@@ -13,16 +13,16 @@ public class User {
 
     private int id;
 
-    @Email(message = "Электронная почта должна содержать символ '@'.")
+    @Email
     private String email;
 
-    @NotBlank(message = "Логин не может быть пустым и содержать пробелы.")
-    @Size(min = 1, message = "Логин не может быть пустым.")
+    @NotBlank
+    @Size
     private String login;
 
-    @NotBlank(message = "Имя не может быть пустым.")
+    @NotBlank
     private String name;
 
-    @Past(message = "Дата рождения не может быть в будущем.")
+    @Past
     private LocalDate birthday;
 }

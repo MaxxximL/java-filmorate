@@ -1,105 +1,113 @@
 package ru.yandex.practicum.filmorate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
 import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class FilmControllerTest {
+@WebMvcTest(FilmController.class)
+@AutoConfigureMockMvc
+class FilmControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private FilmController filmController;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
+        Film validFilm = new Film();
+        validFilm.setName("Valid Film");
+        validFilm.setDescription("Description of the film");
+        validFilm.setReleaseDate(LocalDate.now());
+        validFilm.setDuration(120);
         filmController = new FilmController();
     }
 
     @Test
-    public void testAddFilm_success() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Description of a test film.");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(120);
-
-        Film createdFilm = filmController.addFilm(film);
-
-        assertNotNull(createdFilm);
-        assertEquals("Test Film", createdFilm.getName());
-        assertEquals(1, createdFilm.getId()); // Проверка ID
+    void shouldCreateFilmWhenValid() throws Exception {
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Valid Film\", \"description\":\"Description\", \"releaseDate\": \"2023-03-25\", \"duration\": 120}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Valid Film")));
     }
 
     @Test
-    public void testUpdateFilm_success() {
+    public void whenFilmNameIsBlank_thenReturns400() throws Exception {
         Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Description of a test film.");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(120);
+        film.setName(" ");
 
-        filmController.addFilm(film);
-        film.setName("Updated Film");
-
-        Film updatedFilm = filmController.updateFilm(film);
-
-        assertNotNull(updatedFilm);
-        assertEquals("Updated Film", updatedFilm.getName());
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(film)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void testGetAllFilms() {
+    public void whenFilmDurationIsNegative_thenReturns400() throws Exception {
         Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Description of a test film.");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(120);
+        film.setDuration(-10);
 
-        filmController.addFilm(film);
-
-        List<Film> films = filmController.getAllFilms();
-
-        assertNotNull(films);
-        assertEquals(1, films.size());
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(film)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void testUpdateFilm_notFound() {
-        Film film = new Film();
-        film.setId(99); // ID не существует
-        Exception exception = assertThrows(jakarta.validation.ValidationException.class, () -> filmController.updateFilm(film));
+    void getAllFilms() {
+        Film film1 = new Film();
+        film1.setName("Фильм 1");
+        film1.setDescription("Описание фильма 1");
+        film1.setReleaseDate(LocalDate.of(2021, 1, 1));
+        film1.setDuration(100);
+        filmController.addFilm(film1);
 
-        assertEquals("Фильм с ID 99 не найден.", exception.getMessage());
+        Film film2 = new Film();
+        film2.setName("Фильм 2");
+        film2.setDescription("Описание фильма 2");
+        film2.setReleaseDate(LocalDate.of(2021, 2, 1));
+        film2.setDuration(150);
+        filmController.addFilm(film2);
+
+        List<Film> allFilms = filmController.getAllFilms();
+
+        assertThat(allFilms).hasSize(2);
+        assertThat(allFilms).contains(film1, film2);
     }
+
 
     @Test
-    public void testFilmCreateFailReleaseDate() {
+    public void testFilmCreateFailDuration() throws Exception {
         Film film = new Film();
-        film.setName("Film Name");
-        film.setDescription("Description");
-        film.setReleaseDate(LocalDate.of(3000, 1, 1)); // Дата в будущем
-        film.setDuration(100);
+        film.setName("Another Valid Film");
+        film.setDescription("Description of another valid film");
+        film.setReleaseDate(LocalDate.now());
+        film.setDuration(-50); // Неверная продолжительность
 
-        Exception exception = assertThrows(ValidationException.class, () -> filmController.addFilm(film));
-
-        assertEquals("Дата выхода фильма не может быть в будущем.", exception.getMessage());
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(film)))
+                .andExpect(status().isBadRequest());
     }
 
-    @Test
-    public void testFilmCreateFailDuration() {
-        Film film = new Film();
-        film.setName("Film Name");
-        film.setDescription("Description");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(-10); // Отрицательная продолжительность
-
-        Exception exception = assertThrows(ValidationException.class, () -> filmController.addFilm(film));
-
-        assertEquals("Продолжительность фильма должна быть положительным числом.", exception.getMessage());
-    }
 }

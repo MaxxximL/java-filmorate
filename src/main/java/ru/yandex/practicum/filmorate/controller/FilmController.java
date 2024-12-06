@@ -2,21 +2,21 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/films")
-@Valid
-@Validated
+
 public class FilmController {
 
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
@@ -24,17 +24,19 @@ public class FilmController {
     private int filmIdCounter = 1;
 
     @PostMapping
-    public Film addFilm(@Valid @RequestBody Film film) {
-        if (film.getReleaseDate() == null || film.getReleaseDate().isAfter(LocalDate.now())) {
-            throw new ru.yandex.practicum.filmorate.exception.ValidationException("Дата выхода фильма не может быть в будущем.");
-        }
-        if (film.getDuration() <= 0) {
-            throw new ru.yandex.practicum.filmorate.exception.ValidationException("Продолжительность фильма должна быть положительным числом.");
-        }
+    public ResponseEntity<Object> addFilm(@Valid @RequestBody Film film) {
+
         film.setId(filmIdCounter++);
         films.add(film);
         log.info("Добавлен фильм: {}", film);
-        return film;
+        if (films.contains(film)) {
+            ResponseEntity.ok().body(film);
+            return ResponseEntity.ok().body(film);
+        }
+
+        ru.yandex.practicum.filmorate.model.ErrorResponse errorResponseBody = ErrorResponse.builder().code(400).reasone("Имя не может быть пустым.").build();
+        return new ResponseEntity<>(errorResponseBody, HttpStatusCode.valueOf(400));
+
     }
 
     @PutMapping
