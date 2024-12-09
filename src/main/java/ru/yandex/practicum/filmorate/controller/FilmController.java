@@ -80,6 +80,9 @@ public class FilmController {
         if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 27))) {
             errors.add("Дата выпуска фильма не может быть раньше 28 декабря 1895 года.");
         }
+        if (film.getReleaseDate() != null && film.getReleaseDate().isAfter(LocalDate.now())) {
+            errors.add("Дата релиза не может быть в будущем.");
+        }
         return errors;
     }
 }
