@@ -27,12 +27,11 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private User validUser;
     private UserController userController;
 
     @BeforeEach
     void setUp() {
-        validUser = new User();
+        User validUser = new User();
         validUser.setEmail("valid@mail.com");
         validUser.setLogin("validLogin");
         validUser.setName("Valid User");

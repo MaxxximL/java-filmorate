@@ -62,6 +62,7 @@ class FilmControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+
     @Test
     public void whenFilmDurationIsNegative_thenReturns400() throws Exception {
         Film film = new Film();
@@ -108,6 +109,21 @@ class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(film)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void whenFilmReleaseDateIsInFuture_thenReturns400() throws Exception {
+        Film film = new Film();
+        film.setName("Future Film");
+        film.setDescription("This film is set to release in the future.");
+        film.setReleaseDate(LocalDate.of(3000, 1, 1));
+        film.setDuration(120);
+
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(film)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason", is("Дата релиза не может быть в будущем.")));
     }
 
 }
