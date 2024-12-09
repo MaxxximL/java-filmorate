@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.User;
@@ -22,7 +21,7 @@ public class UserController {
     private int userIdCounter = 1;
 
     @PostMapping
-    public ResponseEntity<Object> createUser(@Valid @RequestBody User user) {
+    public ResponseEntity<Object> createUser(@RequestBody User user) {
         List<String> validationErrors = validateUser(user);
         if (!validationErrors.isEmpty()) {
             ErrorResponse errorResponse = new ErrorResponse();
@@ -31,12 +30,14 @@ public class UserController {
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
 
-            user.setId(userIdCounter++);
-            users.add(user);
-            log.info("Добавлен пользователь: {}", user);
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
 
-            return ResponseEntity.ok().body(user);
-
+        user.setId(userIdCounter++);
+        users.add(user);
+        log.info("Добавлен пользователь: {}", user);
+        return ResponseEntity.ok().body(user);
     }
 
     @PutMapping
