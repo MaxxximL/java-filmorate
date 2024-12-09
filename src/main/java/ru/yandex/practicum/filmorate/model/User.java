@@ -16,7 +16,8 @@ public class User {
     @NotBlank
     @Size
     private String login;
-    
+
+
     private String name;
 
     @Past
