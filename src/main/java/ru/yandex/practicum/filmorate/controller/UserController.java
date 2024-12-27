@@ -1,88 +1,84 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import ru.yandex.practicum.filmorate.model.User;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
-
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
-    private final List<User> users = new ArrayList<>();
-    private int userIdCounter = 1;
+    private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<Object> createUser(@RequestBody User user) {
-        List<String> validationErrors = validateUser(user);
-        if (!validationErrors.isEmpty()) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setCode(400);
-            errorResponse.setReason(String.join(", ", validationErrors));
-            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        try {
+            return ResponseEntity.ok(userService.addUser(user));
+        } catch (ValidationException e) {
+            throw new ValidationException("User validation failed: " + e.getMessage());
         }
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-
-        user.setId(userIdCounter++);
-        users.add(user);
-        log.info("Добавлен пользователь: {}", user);
-        return ResponseEntity.ok().body(user);
     }
 
     @PutMapping
-    public ResponseEntity<Object> updateUser(@RequestBody User user) {
-        List<String> validationErrors = validateUser(user);
-        if (!validationErrors.isEmpty()) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setCode(400);
-            errorResponse.setReason(String.join(", ", validationErrors));
-            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<User> updateUser(@RequestBody User user) {
+        try {
+            return ResponseEntity.ok(userService.updateUser(user));
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("User not found: " + e.getMessage());
         }
+    }
 
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getId() == user.getId()) {
-                users.set(i, user);
-                log.info("Обновлён пользователь: {}", user);
-                return ResponseEntity.ok().body(user);
-            }
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUser(@PathVariable long id) {
+        User user = userService.getUser(id);
+        if (user == null) {
+            throw new EntityNotFoundException("User not found with id: " + id);
         }
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setCode(404);
-        errorResponse.setReason("Пользователь с ID " + user.getId() + " не найден.");
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        log.info("Запрошены все пользователи");
-        return users;
+    public Collection<User> getAllUsers() {
+        return userService.getAllUsers();
     }
 
-    private List<String> validateUser(User user) {
-        List<String> errors = new ArrayList<>();
-        if (user.getEmail() == null || !user.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            errors.add("Некорректный email.");
+    @PutMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<Void> addFriend(@PathVariable long id, @PathVariable long friendId) {
+        userService.addFriend(id, friendId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // UserController.java
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<Void> removeFriend(@PathVariable long id, @PathVariable long friendId) {
+        // Проверяем, существуют ли оба пользователя перед удалением
+        User user = userService.getUser(id);
+        User friend = userService.getUser(friendId);
+
+        if (user == null || friend == null) {
+            throw new EntityNotFoundException("One or both users not found: " + id + " or " + friendId);
         }
-        if (user.getLogin() == null || user.getLogin().isBlank()) {
-            errors.add("Логин не может быть пустым.");
-        }
-        if (user.getName() != null && user.getName().isBlank()) {
-            errors.add("Имя не может быть пустым.");
-        }
-        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
-            errors.add("Дата рождения не может быть в будущем.");
-        }
-        return errors;
+
+        userService.removeFriend(id, friendId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable long id) {
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        return userService.getCommonFriends(id, otherId);
+
     }
 }
+

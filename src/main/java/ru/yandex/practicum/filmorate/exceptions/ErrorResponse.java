@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controller;
+package ru.yandex.practicum.filmorate.exceptions;
 
 import lombok.Builder;
 import lombok.Data;
@@ -11,11 +11,14 @@ public class ErrorResponse {
     public String reason;
 
     public ErrorResponse() {
+    }
 
+    public ErrorResponse(String message) {
     }
 
     public ErrorResponse(int code, String reason) {
         this.code = code;
         this.reason = reason;
     }
+
 }

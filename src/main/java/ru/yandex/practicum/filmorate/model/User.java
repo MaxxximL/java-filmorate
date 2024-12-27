@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -8,7 +11,7 @@ import java.time.LocalDate;
 @Data
 public class User {
 
-    private int id;
+    private long id;
 
     @Email
     private String email;
@@ -17,9 +20,9 @@ public class User {
     @Size
     private String login;
 
-
     private String name;
 
-    @Past
+    @Past(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
+
 }
