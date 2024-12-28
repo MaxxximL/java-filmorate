@@ -53,34 +53,23 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> addFriend(@PathVariable long id, @PathVariable long friendId) {
-        User user = userService.getUser(id);
-        User friend = userService.getUser(friendId);
-
-        if (user == null) {
-            throw new EntityNotFoundException("User not found with ID: " + id);
+    public ResponseEntity<ErrorResponse> addFriend(@PathVariable long id, @PathVariable long friendId) {
+        try {
+            userService.addFriend(id, friendId);
+            return ResponseEntity.ok().build(); // 200 OK
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
         }
-
-        if (friend == null) {
-            throw new EntityNotFoundException("Friend not found with ID: " + friendId);
-        }
-
-        userService.addFriend(id, friendId);
-        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> removeFriend(@PathVariable long id, @PathVariable long friendId) {
-        User user = userService.getUser(id);
-        User friend = userService.getUser(friendId);
-
-        // Проверяем наличие пользователей перед удалением
-        if (user == null || friend == null) {
-            throw new EntityNotFoundException("One or both users not found: " + id + " or " + friendId);
+    public ResponseEntity<ErrorResponse> removeFriend(@PathVariable long id, @PathVariable long friendId) {
+        try {
+            userService.removeFriend(id, friendId);
+            return ResponseEntity.noContent().build(); // 204 NO CONTENT
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
         }
-
-        userService.removeFriend(id, friendId);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/friends")

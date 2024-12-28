@@ -52,23 +52,23 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> addLike(@PathVariable long id, @PathVariable long userId) {
-        Film film = filmService.getFilm(id);
-        if (film == null) {
-           throw new EntityNotFoundException("Film not found: " + id);
+    public ResponseEntity<ErrorResponse> addLike(@PathVariable long id, @PathVariable long userId) {
+        try {
+            filmService.addLike(id, userId);
+            return ResponseEntity.ok().build(); // 200 OK
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
         }
-        filmService.addLike(id, userId);
-        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> removeLike(@PathVariable long id, @PathVariable long userId) {
-        Film film = filmService.getFilm(id);
-        if (film == null) {
-            throw new EntityNotFoundException("Film not found: " + id);
+    public ResponseEntity<ErrorResponse> removeLike(@PathVariable long id, @PathVariable long userId) {
+        try {
+            filmService.removeLike(id, userId);
+            return ResponseEntity.noContent().build(); // 204 NO CONTENT
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
         }
-        filmService.removeLike(id, userId);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/popular")
