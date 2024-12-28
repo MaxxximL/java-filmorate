@@ -62,7 +62,8 @@ public class FilmController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
         }
     }
-    
+
+
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<ErrorResponse> removeLike(@PathVariable long id, @PathVariable long userId) {
         try {
