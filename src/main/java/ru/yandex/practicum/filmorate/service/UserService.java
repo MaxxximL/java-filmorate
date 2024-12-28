@@ -25,6 +25,7 @@ public class UserService {
         List<String> validationErrors = validateUser(user);
         if (!validationErrors.isEmpty()) {
 
+            log.error("Неправильная валидация юзера: {}", String.join(", ", validationErrors));
             throw new ValidationException("Неправильная валидация юзера");
         }
 
@@ -35,60 +36,100 @@ public class UserService {
         user.setId(userIdCounter++);
         log.info("Добавлен пользователь: {}", user);
 
-        return userStorage.addUser(user);
+        try {
+            return userStorage.addUser(user);
+        } catch (Exception e) {
+            log.error("Ошибка при добавлении пользователя: {}", e.getMessage());
+            throw new EntityNotFoundException("Ошибка при добавлении пользователя");
+        }
     }
 
     public User updateUser(User user) {
         if (userStorage.getUser(user.getId()) == null) {
-            throw new EntityNotFoundException("User not found: " + user.getId());
+            log.error("Пользователь не найден: {}", user.getId());
+            throw new EntityNotFoundException("Пользователь не найден");
         }
         validateUser(user);
-        return userStorage.updateUser(user);
+        try {
+            return userStorage.updateUser(user);
+        } catch (Exception e) {
+            log.error("Ошибка при обновлении пользователя: {}", e.getMessage());
+            throw new EntityNotFoundException("Ошибка при обновлении пользователя");
+        }
     }
 
     public User getUser(long id) {
         User user = userStorage.getUser(id);
         if (user == null) {
-            throw new EntityNotFoundException("User not found with id: " + id);
+            log.error("Пользователь не найден: {}", id);
+            throw new EntityNotFoundException("Пользователь не найден");
         }
         return user;
     }
 
     public Collection<User> getAllUsers() {
-        return userStorage.getAllUsers();
+        try {
+            return userStorage.getAllUsers();
+        } catch (Exception e) {
+            log.error("Ошибка при получении всех пользователей: {}", e.getMessage());
+            throw new EntityNotFoundException("Ошибка при получении всех пользователей");
+        }
     }
 
     public void addFriend(long userId, long friendId) {
         if (userStorage.getUser(userId) == null) {
-            throw new EntityNotFoundException("User not found with ID: " + userId);
+            log.error("Пользователь не найден: {}", userId);
+            throw new EntityNotFoundException("Пользователь не найден");
         }
 
         if (userStorage.getUser(friendId) == null) {
-            throw new EntityNotFoundException("Friend not found with ID: " + friendId);
+            log.error("Друг не найден: {}", friendId);
+            throw new EntityNotFoundException("Друг не найден");
         }
 
-        userStorage.addFriend(userId, friendId);
+        try {
+            userStorage.addFriend(userId, friendId);
+        } catch (Exception e) {
+            log.error("Ошибка при добавлении друга: {}", e.getMessage());
+            throw new EntityNotFoundException("Ошибка при добавлении друга");
+        }
     }
 
     public void removeFriend(long userId, long friendId) {
         if (userStorage.getUser(userId) == null) {
-            throw new EntityNotFoundException("User not found with ID: " + userId);
+            log.error("Пользователь не найден: {}", userId);
+            throw new EntityNotFoundException("Пользователь не найден");
         }
+
         if (userStorage.getUser(friendId) == null) {
-            throw new EntityNotFoundException("Friend not found with ID: " + friendId);
+            log.error("Друг не найден: {}", friendId);
+            throw new EntityNotFoundException("Друг не найден");
         }
-        userStorage.removeFriend(userId, friendId);
+
+        try {
+            userStorage.removeFriend(userId, friendId);
+        } catch (Exception e) {
+            log.error("Ошибка при удалении друга: {}", e.getMessage());
+            throw new EntityNotFoundException("Ошибка при удалении друга");
+        }
     }
 
-    public Collection<User> getFriends(long userId) {
-        if (userStorage.getUser(userId) == null) {
-            throw new EntityNotFoundException("User not found with id: " + userId);
+    public Collection<User> getFriends(long id) {
+        try {
+            return userStorage.getFriends(id);
+        } catch (Exception e) {
+            log.error("Ошибка при получении друзей: {}", e.getMessage());
+            throw new EntityNotFoundException("Ошибка при получении друзей");
         }
-        return userStorage.getFriends(userId);
     }
 
-    public Collection<User> getCommonFriends(long userId, long otherId) {
-        return userStorage.getCommonFriends(userId, otherId);
+    public Collection<User> getCommonFriends(long id, long otherId) {
+        try {
+            return userStorage.getCommonFriends(id, otherId);
+        } catch (Exception e) {
+            log.error("Ошибка при получении общих друзей: {}", e.getMessage());
+            throw new EntityNotFoundException("Ошибка при получении общих друзей");
+        }
     }
 
     public List<String> validateUser(User user) {
