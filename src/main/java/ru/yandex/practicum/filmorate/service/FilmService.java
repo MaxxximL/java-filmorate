@@ -63,7 +63,6 @@ public class FilmService {
         return film;
     }
 
-    
     public List<Film> getAllFilms() {
         try {
             return filmStorage.getAllFilms();
