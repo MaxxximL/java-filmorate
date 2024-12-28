@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.EntityNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -18,12 +18,13 @@ public class FilmController {
     private final FilmService filmService;
 
     @PostMapping
-    public ResponseEntity<Film> addFilm(@RequestBody Film film) {
-        try {
-            return ResponseEntity.ok(filmService.addFilm(film));
-        } catch (ValidationException e) {
-            throw new ValidationException("Film validation failed: " + e.getMessage());
+    public ResponseEntity<Object> addFilm(@RequestBody Film film) {
+        List<String> validationErrors = filmService.validateFilm(film);
+        if (!validationErrors.isEmpty()) {
+            String errorMessage = "Film validation failed: " + String.join(", ", validationErrors);
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorMessage));
         }
+        return ResponseEntity.ok(filmService.addFilm(film));
     }
 
     @PutMapping
@@ -37,11 +38,12 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> getFilm(@PathVariable long id) {
-        Film film = filmService.getFilm(id);
-        if (film == null) {
-            throw new EntityNotFoundException("Film not found with id: " + id);
+        try {
+            Film film = filmService.getFilm(id);
+            return ResponseEntity.ok(film);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(film);
     }
 
     @GetMapping
@@ -53,7 +55,7 @@ public class FilmController {
     public ResponseEntity<Void> addLike(@PathVariable long id, @PathVariable long userId) {
         Film film = filmService.getFilm(id);
         if (film == null) {
-            throw new EntityNotFoundException("Film not found: " + id);
+           throw new EntityNotFoundException("Film not found: " + id);
         }
         filmService.addLike(id, userId);
         return ResponseEntity.status(HttpStatus.OK).build();

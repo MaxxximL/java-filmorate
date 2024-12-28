@@ -72,7 +72,7 @@ public class FilmService {
         return filmStorage.getMostLikedFilms(count);
     }
 
-    private List<String> validateFilm(Film film) {
+    public List<String> validateFilm(Film film) {
         List<String> errors = new ArrayList<>();
         if (film.getName() == null || film.getName().isBlank()) {
             errors.add("Имя фильма не может быть пустым.");

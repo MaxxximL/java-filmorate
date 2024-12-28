@@ -17,7 +17,7 @@ public class User {
     private String email;
 
     @NotBlank
-    @Size
+    @Size(min = 1, message = "Логин не может быть пустым.")
     private String login;
 
     private String name;

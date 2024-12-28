@@ -91,7 +91,7 @@ public class UserService {
         return userStorage.getCommonFriends(userId, otherId);
     }
 
-    private List<String> validateUser(User user) {
+    public List<String> validateUser(User user) {
         List<String> errors = new ArrayList<>();
         if (user.getEmail() == null || !user.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             errors.add("Некорректный email.");
