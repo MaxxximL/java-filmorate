@@ -16,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
+    private UserController userService;
 
     @PostMapping
     public ResponseEntity<Object> addFilm(@RequestBody Film film) {
@@ -28,11 +29,12 @@ public class FilmController {
     }
 
     @PutMapping
-    public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
+    public ResponseEntity<Object> updateFilm(@RequestBody Film film) {
         try {
             return ResponseEntity.ok(filmService.updateFilm(film));
         } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException("Film not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Film not found: " + e.getMessage())); // Вернуть 404 Not Found
         }
     }
 
@@ -60,7 +62,7 @@ public class FilmController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
         }
     }
-
+    
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<ErrorResponse> removeLike(@PathVariable long id, @PathVariable long userId) {
         try {

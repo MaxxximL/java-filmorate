@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Произошла внутренняя ошибка сервера: " + e.getMessage()));
+                .body(new ErrorResponse(500,"Произошла внутренняя ошибка сервера: " + e.getMessage()));
     }
 
 }

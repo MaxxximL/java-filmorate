@@ -10,9 +10,6 @@ public class ErrorResponse {
     public int code;
     public String reason;
 
-    public ErrorResponse() {
-    }
-
     public ErrorResponse(String message) {
     }
 

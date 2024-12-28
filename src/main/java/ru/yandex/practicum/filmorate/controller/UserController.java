@@ -28,13 +28,13 @@ public class UserController {
         return ResponseEntity.ok(userService.addUser(user));
     }
 
-
     @PutMapping
-    public ResponseEntity<User> updateUser(@RequestBody User user) {
+    public ResponseEntity<Object> updateUser(@RequestBody User user) {
         try {
             return ResponseEntity.ok(userService.updateUser(user));
         } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException("User not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("User not found: " + e.getMessage())); // Вернуть 404 Not Found
         }
     }
 
