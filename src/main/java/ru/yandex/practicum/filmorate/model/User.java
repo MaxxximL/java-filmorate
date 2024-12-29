@@ -7,10 +7,11 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class User {
-
     private long id;
 
     @Email
@@ -25,4 +26,6 @@ public class User {
     @Past(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
 
+    // Добавляем поле для хранения id друзей
+    private Set<Long> friends = new HashSet<>();
 }

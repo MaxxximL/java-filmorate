@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -25,86 +26,58 @@ public class FilmService {
     public Film addFilm(Film film) {
         List<String> validationErrors = validateFilm(film);
         if (!validationErrors.isEmpty()) {
-            log.error("Неправильная валидация фильма: {}", String.join(", ", validationErrors));
             throw new ValidationException("Неправильная валидация фильма");
         }
 
         film.setId(filmIdCounter++);
         log.info("Добавлен фильм: {}", film);
 
-        try {
-            return filmStorage.addFilm(film);
-        } catch (Exception e) {
-            log.error("Ошибка при добавлении фильма: {}", e.getMessage());
-            throw new EntityNotFoundException("Ошибка при добавлении фильма");
-        }
+        return filmStorage.addFilm(film);
     }
 
     public Film updateFilm(Film film) {
         if (filmStorage.getFilm(film.getId()) == null) {
-            log.error("Фильм не найден: {}", film.getId());
-            throw new EntityNotFoundException("Фильм не найден");
+            throw new EntityNotFoundException("Film not found: " + film.getId());
         }
         validateFilm(film);
-        try {
-            return filmStorage.updateFilm(film);
-        } catch (Exception e) {
-            log.error("Ошибка при обновлении фильма: {}", e.getMessage());
-            throw new EntityNotFoundException("Ошибка при обновлении фильма");
-        }
+        return filmStorage.updateFilm(film);
     }
 
     public Film getFilm(long id) {
         Film film = filmStorage.getFilm(id);
         if (film == null) {
-            log.error("Фильм не найден: {}", id);
-            throw new EntityNotFoundException("Фильм не найден");
+            throw new EntityNotFoundException("Film not found with id: " + id);
         }
         return film;
     }
 
     public List<Film> getAllFilms() {
-        try {
-            return filmStorage.getAllFilms();
-        } catch (Exception e) {
-            log.error("Ошибка при получении всех фильмов: {}", e.getMessage());
-            throw new EntityNotFoundException("Ошибка при получении всех фильмов");
-        }
+        return filmStorage.getAllFilms();
     }
 
     public void addLike(long filmId, long userId) {
         if (filmStorage.getFilm(filmId) == null) {
-            log.error("Фильм не найден: {}", filmId);
-            throw new EntityNotFoundException("Фильм не найден");
+            throw new EntityNotFoundException("Film not found: " + filmId);
         }
-        try {
-            filmStorage.addLike(filmId, userId);
-        } catch (Exception e) {
-            log.error("Ошибка при добавлении лайка: {}", e.getMessage());
-            throw new EntityNotFoundException("Ошибка при добавлении лайка");
-        }
+        filmStorage.addLike(filmId, userId);
     }
 
     public void removeLike(long filmId, long userId) {
         if (filmStorage.getFilm(filmId) == null) {
-            log.error("Фильм не найден: {}", filmId);
-            throw new EntityNotFoundException("Фильм не найден");
+            throw new EntityNotFoundException("Film not found: " + filmId);
         }
-        try {
-            filmStorage.removeLike(filmId, userId);
-        } catch (Exception e) {
-            log.error("Ошибка при удалении лайка: {}", e.getMessage());
-            throw new EntityNotFoundException("Ошибка при удалении лайка");
+        filmStorage.removeLike(filmId, userId);
+    }
+
+    public Set<Long> getLikes(long filmId) {
+        if (filmStorage.getFilm(filmId) == null) {
+            throw new EntityNotFoundException("Film not found: " + filmId);
         }
+        return filmStorage.getLikes(filmId);
     }
 
     public List<Film> getMostLikedFilms(int count) {
-        try {
-            return filmStorage.getMostLikedFilms(count);
-        } catch (Exception e) {
-            log.error("Ошибка при получении самых популярных фильмов: {}", e.getMessage());
-            throw new EntityNotFoundException("Ошибка при получении самых популярных фильмов");
-        }
+        return filmStorage.getMostLikedFilms(count);
     }
 
     public List<String> validateFilm(Film film) {

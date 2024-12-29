@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/films")
@@ -54,28 +55,34 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<ErrorResponse> addLike(@PathVariable long id, @PathVariable long userId) {
+    public ResponseEntity<Void> addLike(@PathVariable long id, @PathVariable long userId) {
         try {
             filmService.addLike(id, userId);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 NOT FOUND без сообщения
         }
     }
 
-
     @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<ErrorResponse> removeLike(@PathVariable long id, @PathVariable long userId) {
+    public ResponseEntity<Void> removeLike(@PathVariable long id, @PathVariable long userId) {
         try {
             filmService.removeLike(id, userId);
             return ResponseEntity.noContent().build(); // 204 NO CONTENT
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 NOT FOUND без сообщения
         }
+    }
+
+    @GetMapping("/{id}/likes")
+    public ResponseEntity<Set<Long>> getLikes(@PathVariable long id) {
+        Set<Long> likes = filmService.getLikes(id);
+        return ResponseEntity.ok(likes);
     }
 
     @GetMapping("/popular")
     public List<Film> getMostLikedFilms(@RequestParam(defaultValue = "10") int count) {
         return filmService.getMostLikedFilms(count);
+
     }
 }

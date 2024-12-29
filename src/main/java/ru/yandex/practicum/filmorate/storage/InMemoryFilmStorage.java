@@ -39,12 +39,18 @@ public class InMemoryFilmStorage implements FilmStorage {
         filmLikes.computeIfAbsent(filmId, k -> new HashSet<>()).add(userId);
     }
 
+
     @Override
     public void removeLike(long filmId, long userId) {
-        Set<Long> likes = filmLikes.get(filmId);
-        if (likes != null) {
-            likes.remove(userId);
+        Film film = films.get(filmId);
+        if (film != null) {
+            film.getLikes().remove(userId); // убираем уникальный лайк
         }
+    }
+
+    @Override
+    public Set<Long> getLikes(long filmId) {
+        return filmLikes.getOrDefault(filmId, Collections.emptySet());
     }
 
     @Override

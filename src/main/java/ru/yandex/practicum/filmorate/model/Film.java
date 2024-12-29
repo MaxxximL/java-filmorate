@@ -4,6 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class Film {
@@ -22,4 +24,6 @@ public class Film {
     private long duration;
 
 
+    // Добавляем поле для хранения id пользователей, которые поставили лайки
+    private Set<Long> likes = new HashSet<>();
 }

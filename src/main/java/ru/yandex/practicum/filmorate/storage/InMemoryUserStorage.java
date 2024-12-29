@@ -71,4 +71,10 @@ public class InMemoryUserStorage implements UserStorage {
         friendsOfUser.retainAll(friendsOfOther);
         return friendsOfUser.stream().map(users::get).toList();
     }
+
+    @Override
+    public Set<Long> getFriendsIds(long userId) {
+        return userFriends.getOrDefault(userId, Collections.emptySet());
+
+    }
 }

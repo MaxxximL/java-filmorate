@@ -18,4 +18,7 @@ public class ErrorResponse {
         this.reason = reason;
     }
 
+    public ErrorResponse() {
+
+    }
 }
