@@ -35,17 +35,19 @@ public class FilmController {
             return ResponseEntity.ok(filmService.updateFilm(film));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Film not found: " + e.getMessage())); // Вернуть 404 Not Found
+                    .body(new ErrorResponse("Film not found: " + e.getMessage()));
         }
     }
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<Film> getFilm(@PathVariable long id) {
+    public ResponseEntity<Object> getFilm(@PathVariable long id) {
         try {
             Film film = filmService.getFilm(id);
             return ResponseEntity.ok(film);
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Film not found with id: " + id));
         }
     }
 
@@ -54,23 +56,26 @@ public class FilmController {
         return filmService.getAllFilms();
     }
 
+
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> addLike(@PathVariable long id, @PathVariable long userId) {
+    public ResponseEntity<Object> addLike(@PathVariable long id, @PathVariable long userId) {
         try {
             filmService.addLike(id, userId);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 NOT FOUND без сообщения
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Film or user not found: " + e.getMessage()));
         }
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> removeLike(@PathVariable long id, @PathVariable long userId) {
+    public ResponseEntity<Object> removeLike(@PathVariable long id, @PathVariable long userId) {
         try {
             filmService.removeLike(id, userId);
             return ResponseEntity.noContent().build(); // 204 NO CONTENT
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 NOT FOUND без сообщения
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Film or user not found: " + e.getMessage()));
         }
     }
 

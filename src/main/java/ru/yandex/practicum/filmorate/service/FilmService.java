@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exceptions.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private int filmIdCounter = 1;
@@ -59,12 +61,18 @@ public class FilmService {
         if (filmStorage.getFilm(filmId) == null) {
             throw new EntityNotFoundException("Film not found: " + filmId);
         }
+        if (userStorage.getUser(userId) == null) { // Проверка существования пользователя
+            throw new EntityNotFoundException("User not found: " + userId);
+        }
         filmStorage.addLike(filmId, userId);
     }
 
     public void removeLike(long filmId, long userId) {
         if (filmStorage.getFilm(filmId) == null) {
             throw new EntityNotFoundException("Film not found: " + filmId);
+        }
+        if (userStorage.getUser(userId) == null) {
+            throw new EntityNotFoundException("User not found: " + userId);
         }
         filmStorage.removeLike(filmId, userId);
     }

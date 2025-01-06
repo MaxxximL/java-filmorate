@@ -58,7 +58,7 @@ public class UserService {
         return userStorage.getAllUsers();
     }
 
-    public void addFriend(long userId, long friendId) {
+    public List<String> addFriend(long userId, long friendId) {
         if (userStorage.getUser(userId) == null) {
             throw new EntityNotFoundException("User not found with ID: " + userId);
         }
@@ -73,6 +73,7 @@ public class UserService {
         }
 
         userStorage.addFriend(userId, friendId);
+        return null;
     }
 
     public void removeFriend(long userId, long friendId) {

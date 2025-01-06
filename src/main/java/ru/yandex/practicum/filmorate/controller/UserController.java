@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ErrorResponse;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -39,42 +40,62 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable long id) {
-        User user = userService.getUser(id);
-        if (user == null) {
-            throw new EntityNotFoundException("User not found with id: " + id);
+    public ResponseEntity<Object> getUser(@PathVariable long id) {
+        try {
+            User user = userService.getUser(id);
+            return ResponseEntity.ok(user);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("User not found with id: " + id));
         }
-        return ResponseEntity.ok(user);
     }
+
 
     @GetMapping
     public Collection<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
+
+
     @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<ErrorResponse> addFriend(@PathVariable long id, @PathVariable long friendId) {
+    public ResponseEntity<Object> addFriend(@PathVariable long id, @PathVariable long friendId) {
         try {
             userService.addFriend(id, friendId);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
+        } catch (ValidationException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse(e.getMessage())); // 400 BAD REQUEST
         }
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<ErrorResponse> removeFriend(@PathVariable long id, @PathVariable long friendId) {
+    public ResponseEntity<Object> removeFriend(@PathVariable long id, @PathVariable long friendId) {
         try {
             userService.removeFriend(id, friendId);
             return ResponseEntity.noContent().build(); // 204 NO CONTENT
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
+        } catch (ValidationException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse(e.getMessage())); // 400 BAD REQUEST
         }
     }
 
+
     @GetMapping("/{id}/friends")
-    public Collection<User> getFriends(@PathVariable long id) {
-        return userService.getFriends(id);
+    public ResponseEntity<Object> getFriends(@PathVariable long id) {
+        try {
+            Collection<User> friends = userService.getFriends(id);
+            return ResponseEntity.ok(friends);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("User not found with id: " + id));
+        }
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
