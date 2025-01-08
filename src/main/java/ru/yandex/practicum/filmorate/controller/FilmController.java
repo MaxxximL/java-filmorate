@@ -17,16 +17,14 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
-    private UserController userService;
 
     @PostMapping
     public ResponseEntity<Object> addFilm(@RequestBody Film film) {
-        List<String> validationErrors = filmService.validateFilm(film);
-        if (!validationErrors.isEmpty()) {
-            String errorMessage = "Film validation failed: " + String.join(", ", validationErrors);
-            return ResponseEntity.badRequest().body(new ErrorResponse(errorMessage));
+        try {
+            return ResponseEntity.ok(filmService.addFilm(film));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Film validation failed: " + e.getMessage()));
         }
-        return ResponseEntity.ok(filmService.addFilm(film));
     }
 
     @PutMapping
@@ -39,12 +37,10 @@ public class FilmController {
         }
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<Object> getFilm(@PathVariable long id) {
         try {
-            Film film = filmService.getFilm(id);
-            return ResponseEntity.ok(film);
+            return ResponseEntity.ok(filmService.getFilm(id));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ErrorResponse("Film not found with id: " + id));
@@ -55,7 +51,6 @@ public class FilmController {
     public List<Film> getAllFilms() {
         return filmService.getAllFilms();
     }
-
 
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Object> addLike(@PathVariable long id, @PathVariable long userId) {
@@ -88,6 +83,5 @@ public class FilmController {
     @GetMapping("/popular")
     public List<Film> getMostLikedFilms(@RequestParam(defaultValue = "10") int count) {
         return filmService.getMostLikedFilms(count);
-
     }
 }

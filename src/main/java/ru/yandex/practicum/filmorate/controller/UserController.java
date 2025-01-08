@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -21,12 +20,11 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Object> createUser(@RequestBody User user) {
-        List<String> validationErrors = userService.validateUser(user);
-        if (!validationErrors.isEmpty()) {
-            String errorMessage = "User validation failed: " + String.join(", ", validationErrors);
-            return ResponseEntity.badRequest().body(new ErrorResponse(errorMessage));
+        try {
+            return ResponseEntity.ok(userService.addUser(user));
+        } catch (ValidationException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
-        return ResponseEntity.ok(userService.addUser(user));
     }
 
     @PutMapping
@@ -35,28 +33,24 @@ public class UserController {
             return ResponseEntity.ok(userService.updateUser(user));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("User not found: " + e.getMessage())); // Вернуть 404 Not Found
+                    .body(new ErrorResponse("User not found: " + e.getMessage()));
         }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getUser(@PathVariable long id) {
         try {
-            User user = userService.getUser(id);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(userService.getUser(id));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ErrorResponse("User not found with id: " + id));
         }
     }
 
-
     @GetMapping
     public Collection<User> getAllUsers() {
         return userService.getAllUsers();
     }
-
-
 
     @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Object> addFriend(@PathVariable long id, @PathVariable long friendId) {
@@ -65,7 +59,7 @@ public class UserController {
             return ResponseEntity.ok().build(); // 200 OK
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse(e.getMessage())); // 404 NOT FOUND
+                    .body(new ErrorResponse("User or friend not found: " + e.getMessage()));
         } catch (ValidationException e) {
             return ResponseEntity.badRequest()
                     .body(new ErrorResponse(e.getMessage())); // 400 BAD REQUEST
@@ -86,7 +80,6 @@ public class UserController {
         }
     }
 
-
     @GetMapping("/{id}/friends")
     public ResponseEntity<Object> getFriends(@PathVariable long id) {
         try {
@@ -101,6 +94,5 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public Collection<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
         return userService.getCommonFriends(id, otherId);
-
     }
 }

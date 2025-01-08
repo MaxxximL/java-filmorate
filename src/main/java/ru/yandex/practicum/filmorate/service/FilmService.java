@@ -24,9 +24,10 @@ public class FilmService {
 
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private int filmIdCounter = 1;
+    private List<String> validationErrors = new ArrayList<>();
 
     public Film addFilm(Film film) {
-        List<String> validationErrors = validateFilm(film);
+        validateFilm(film);
         if (!validationErrors.isEmpty()) {
             throw new ValidationException("Неправильная валидация фильма");
         }
@@ -42,6 +43,9 @@ public class FilmService {
             throw new EntityNotFoundException("Film not found: " + film.getId());
         }
         validateFilm(film);
+        if (!validationErrors.isEmpty()) {
+            throw new ValidationException("Неправильная валидация фильма");
+        }
         return filmStorage.updateFilm(film);
     }
 
@@ -61,7 +65,7 @@ public class FilmService {
         if (filmStorage.getFilm(filmId) == null) {
             throw new EntityNotFoundException("Film not found: " + filmId);
         }
-        if (userStorage.getUser(userId) == null) { // Проверка существования пользователя
+        if (userStorage.getUser(userId) == null) {
             throw new EntityNotFoundException("User not found: " + userId);
         }
         filmStorage.addLike(filmId, userId);
@@ -88,23 +92,27 @@ public class FilmService {
         return filmStorage.getMostLikedFilms(count);
     }
 
-    public List<String> validateFilm(Film film) {
-        List<String> errors = new ArrayList<>();
+    private boolean validateFilm(Film film) {
+        validationErrors.clear();
         if (film.getName() == null || film.getName().isBlank()) {
-            errors.add("Имя фильма не может быть пустым.");
+            validationErrors.add("Имя фильма не может быть пустым.");
         }
         if (film.getDescription() != null && film.getDescription().length() > 200) {
-            errors.add("Максимальная длина описания — 200 символов.");
+            validationErrors.add("Максимальная длина описания — 200 символов.");
         }
         if (film.getDuration() <= 0) {
-            errors.add("Продолжительность фильма должна быть положительной.");
+            validationErrors.add("Продолжительность фильма должна быть положительной.");
         }
         if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 27))) {
-            errors.add("Дата выпуска фильма не может быть раньше 28 декабря 1895 года.");
+            validationErrors.add("Дата выпуска фильма не может быть раньше 28 декабря 1895 года.");
         }
         if (film.getReleaseDate() != null && film.getReleaseDate().isAfter(LocalDate.now())) {
-            errors.add("Дата релиза не может быть в будущем.");
+            validationErrors.add("Дата релиза не может быть в будущем.");
         }
-        return errors;
+        return validationErrors.isEmpty();
+    }
+
+    public List<String> getValidationErrors() {
+        return new ArrayList<>(validationErrors);
     }
 }
