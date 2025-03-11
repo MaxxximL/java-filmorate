@@ -77,4 +77,15 @@ public class InMemoryUserStorage implements UserStorage {
         return userFriends.getOrDefault(userId, Collections.emptySet());
 
     }
-}
+
+        @Override
+        public Optional<User> findById(long id) {
+            return Optional.ofNullable(users.get(id));
+        }
+
+        @Override
+        public User save(User user) {
+            users.put(user.getId(), user);
+            return user;
+        }
+    }

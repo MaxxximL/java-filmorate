@@ -1,12 +1,14 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exceptions.EntityNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.dto.CreateUserDto;
+import ru.yandex.practicum.filmorate.mappers.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -14,36 +16,44 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private int userIdCounter = 1;
 
-    public User addUser(User user) {
-        List<String> validationErrors = validateUser(user);
-        if (!validationErrors.isEmpty()) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
 
-            throw new ValidationException("Неправильная валидация юзера");
-        }
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-
-        user.setId(userIdCounter++);
-        log.info("Добавлен пользователь: {}", user);
-
-        return userStorage.addUser(user);
+        this.userStorage = userStorage;
     }
 
-    public User updateUser(User user) {
-        if (userStorage.getUser(user.getId()) == null) {
-            throw new EntityNotFoundException("User not found: " + user.getId());
+    public CreateUserDto addUser(CreateUserDto userDto) {
+        User newUser = UserMapper.toModel(userDto);
+        validateUser(newUser);
+        if (newUser.getName() == null || newUser.getName().isBlank()) {
+            newUser.setName(newUser.getLogin());
         }
-        validateUser(user);
-        return userStorage.updateUser(user);
+        // Проверка на уникальность email
+        if (userStorage.getAllUsers().stream().anyMatch(u -> u.getEmail().equals(newUser.getEmail()))) {
+            throw new ValidationException("Пользователь с таким email уже существует.");
+        }
+        User createdUser = userStorage.save(newUser); // используем save, а не addUser
+        return UserMapper.toDto(createdUser);
+    }
+
+    public User updateUser(long id, CreateUserDto userDto) {
+        User existingUser = userStorage.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found."));
+
+        User updatedUser = UserMapper.toModel(userDto);
+        updatedUser.setId(id); //ID берем из path
+
+        validateUser(updatedUser);
+        // Проверка на уникальность email при обновлении
+        if (!existingUser.getEmail().equals(updatedUser.getEmail()) && userStorage.getAllUsers().stream().anyMatch(u -> u.getEmail().equals(updatedUser.getEmail()))) {
+            throw new ValidationException("Пользователь с таким email уже существует.");
+        }
+        return userStorage.save(updatedUser);
     }
 
     public User getUser(long id) {
@@ -57,6 +67,7 @@ public class UserService {
     public Collection<User> getAllUsers() {
         return userStorage.getAllUsers();
     }
+
 
     public List<String> addFriend(long userId, long friendId) {
         if (userStorage.getUser(userId) == null) {
@@ -77,12 +88,15 @@ public class UserService {
     }
 
     public void removeFriend(long userId, long friendId) {
+        // Проверяем существование обоих пользователей
         if (userStorage.getUser(userId) == null) {
             throw new EntityNotFoundException("User not found with ID: " + userId);
         }
         if (userStorage.getUser(friendId) == null) {
             throw new EntityNotFoundException("Friend not found with ID: " + friendId);
         }
+
+        // Удаление друга
         userStorage.removeFriend(userId, friendId);
     }
 
@@ -97,20 +111,19 @@ public class UserService {
         return userStorage.getCommonFriends(userId, otherId);
     }
 
-    private List<String> validateUser(User user) {
-        List<String> errors = new ArrayList<>();
+    private void validateUser(User user) {  // Изменено: теперь метод возвращает void
         if (user.getEmail() == null || !user.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            errors.add("Некорректный email.");
+            throw new ValidationException("Некорректный email.");
         }
         if (user.getLogin() == null || user.getLogin().isBlank()) {
-            errors.add("Логин не может быть пустым.");
+            throw new ValidationException("Логин не может быть пустым.");
         }
-        if (user.getName() != null && user.getName().isBlank()) {
-            errors.add("Имя не может быть пустым.");
+        if (user.getName() != null && user.getName().isBlank()) {  // Валидация имени
+            user.setName(user.getLogin()); // Если имя пустое, используем логин
         }
-        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
-            errors.add("Дата рождения не может быть в будущем.");
+        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) { // Изменено: проверка на null
+            throw new ValidationException("Дата рождения не может быть в будущем.");
         }
-        return errors;
     }
+
 }

@@ -62,4 +62,15 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .map(e -> films.get(e.getKey()))
                 .toList();
     }
+
+    @Override
+    public Optional<Film> findById(long id) {
+        return Optional.ofNullable(films.get(id));
+    }
+
+    @Override
+    public Film save(Film film) {
+        films.put(film.getId(), film);
+        return film;
+    }
 }

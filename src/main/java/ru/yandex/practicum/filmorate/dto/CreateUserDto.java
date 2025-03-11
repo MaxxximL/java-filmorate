@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +13,8 @@ import java.util.Set;
 
 @Data
 @Builder
-public class User {
+public class CreateUserDto {
+
     private long id;
 
     @Email
