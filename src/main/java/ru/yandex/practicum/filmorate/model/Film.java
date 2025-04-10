@@ -29,14 +29,18 @@ public class Film {
     @Positive
     private long duration;
 
-    private Set<Long> likes = new HashSet<>();
-
     private Mpa mpa;
 
+    @Builder.Default
+    private Set<Long> likes = new HashSet<>();
+
+    @Builder.Default
     private List<Long> genreIds = new ArrayList<>();
 
+    @Builder.Default
     private List<Genre> genres = new ArrayList<>();
 
+    @Builder.Default
     private List<Director> directors = new ArrayList<>();
 
 }
