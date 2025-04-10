@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +46,14 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> addFriend(@PathVariable long id, @PathVariable long friendId) {
-        userService.addFriend(id, friendId);
-        return ResponseEntity.ok().build();
+        try {
+            userService.addFriend(id, friendId);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build(); // Return 404 for non-existent users
+        } catch (ValidationException e) {
+            return ResponseEntity.badRequest().build(); // Return 400 for validation errors
+        }
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")

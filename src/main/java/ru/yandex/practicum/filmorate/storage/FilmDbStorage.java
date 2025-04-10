@@ -12,7 +12,10 @@ import ru.yandex.practicum.filmorate.storage.mappers.FilmRowMapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Primary
 @Repository
@@ -33,7 +36,7 @@ public class FilmDbStorage implements FilmStorage {
             ps.setString(2, film.getDescription());
             ps.setDate(3, Date.valueOf(film.getReleaseDate()));
             ps.setLong(4, film.getDuration());
-            ps.setObject(5, film.getMpaId());
+            ps.setLong(5, film.getMpa().getId());
             return ps;
         }, keyHolder);
 
@@ -49,7 +52,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getMpaId(),
+                film.getMpa().getId(),
                 film.getId()
         );
         return film;
@@ -121,4 +124,57 @@ public class FilmDbStorage implements FilmStorage {
             return film;
         }
     }
+
+    @Override
+    public List<Film> getFilmsByDirectorSortedByYear(long directorId) {
+        String sql = "SELECT f.* FROM films f " +
+                "JOIN film_directors fd ON f.id = fd.film_id " +
+                "WHERE fd.director_id = ? " +
+                "ORDER BY f.release_date";
+        return jdbcTemplate.query(sql, filmRowMapper, directorId);
+    }
+
+    @Override
+    public List<Film> getFilmsByDirectorSortedByLikes(long directorId) {
+        String sql = "SELECT f.* FROM films f " +
+                "JOIN film_directors fd ON f.id = fd.film_id " +
+                "LEFT JOIN film_likes fl ON f.id = fl.film_id " +
+                "WHERE fd.director_id = ? " +
+                "GROUP BY f.id " +
+                "ORDER BY COUNT(fl.user_id) DESC";
+        return jdbcTemplate.query(sql, filmRowMapper, directorId);
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, List<String> by) {
+        String sql;
+        if (by.contains("title") && by.contains("director")) {
+            sql = "SELECT f.* FROM films f " +
+                    "LEFT JOIN film_directors fd ON f.id = fd.film_id " +
+                    "LEFT JOIN directors d ON fd.director_id = d.id " +
+                    "LEFT JOIN film_likes fl ON f.id = fl.film_id " +
+                    "WHERE LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?) " +
+                    "GROUP BY f.id " +
+                    "ORDER BY COUNT(fl.user_id) DESC";
+            return jdbcTemplate.query(sql, filmRowMapper, "%" + query + "%", "%" + query + "%");
+        } else if (by.contains("director")) {
+            sql = "SELECT f.* FROM films f " +
+                    "LEFT JOIN film_directors fd ON f.id = fd.film_id " +
+                    "LEFT JOIN directors d ON fd.director_id = d.id " +
+                    "LEFT JOIN film_likes fl ON f.id = fl.film_id " +
+                    "WHERE LOWER(d.name) LIKE LOWER(?) " +
+                    "GROUP BY f.id " +
+                    "ORDER BY COUNT(fl.user_id) DESC";
+            return jdbcTemplate.query(sql, filmRowMapper, "%" + query + "%");
+        } else {
+            // Default to title search
+            sql = "SELECT f.* FROM films f " +
+                    "LEFT JOIN film_likes fl ON f.id = fl.film_id " +
+                    "WHERE LOWER(f.name) LIKE LOWER(?) " +
+                    "GROUP BY f.id " +
+                    "ORDER BY COUNT(fl.user_id) DESC";
+            return jdbcTemplate.query(sql, filmRowMapper, "%" + query + "%");
+        }
+    }
 }
+

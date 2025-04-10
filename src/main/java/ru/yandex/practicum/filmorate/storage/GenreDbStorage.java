@@ -30,4 +30,19 @@ public class GenreDbStorage implements GenreStorage {
                 return null; // возвращаем null, если жанр не найден
             }
         }
+
+    public void updateFilmGenres(long filmId, List<Genre> genres) {
+        String sql = "DELETE FROM film_genres WHERE film_id = ?";
+        jdbcTemplate.update(sql, filmId);
+
+        for (Genre genre : genres) {
+            addFilmGenre(filmId, genre.getId());
+        }
     }
+
+    public void addFilmGenre(long filmId, long genreId) {
+        String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
+        jdbcTemplate.update(sql, filmId, genreId);
+    }
+
+}

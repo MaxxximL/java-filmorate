@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,6 +14,7 @@ import java.util.List;
 @Data
 @Builder
 public class CreateFilmDto {
+
     private long id;
 
     @NotBlank(message = "Имя фильма не может быть пустым.")
@@ -25,13 +29,12 @@ public class CreateFilmDto {
     @Positive
     private long duration;
 
-    private Long mpaId;
-
     private MpaDto mpa;
 
     private List<Long> genreIds = new ArrayList<>();
 
-    private List<GenreDto> genres = new ArrayList<>(); // Инициализация списка
+    private List<GenreDto> genres = new ArrayList<>();
 
+    private List<DirectorDto> directors = new ArrayList<>();
 
 }

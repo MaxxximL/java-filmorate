@@ -15,6 +15,7 @@ public class MpaMapper {
     public static Mpa toModel(MpaDto mpaDto) {
         return Mpa.builder()
                 .id(mpaDto.getId())
+                .name(mpaDto.getName())
                 .build();
     }
 }

@@ -1,11 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -24,16 +29,14 @@ public class Film {
     @Positive
     private long duration;
 
-    // Добавляем поле для хранения id пользователей, которые поставили лайки
     private Set<Long> likes = new HashSet<>();
-
-    private Long mpaId;
 
     private Mpa mpa;
 
-    private List<Long> genreIds = new ArrayList<>(); // Инициализируем как пустой список
+    private List<Long> genreIds = new ArrayList<>();
 
-    private List<Genre> genres = new ArrayList<>(); // Инициализация списка жанров
+    private List<Genre> genres = new ArrayList<>();
 
+    private List<Director> directors = new ArrayList<>();
 
 }

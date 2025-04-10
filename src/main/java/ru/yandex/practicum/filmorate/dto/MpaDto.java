@@ -7,7 +7,7 @@ import lombok.Data;
 @Builder
 public class MpaDto {
 
-    private long id;
+    private Long id;
     private String name;
 
 }

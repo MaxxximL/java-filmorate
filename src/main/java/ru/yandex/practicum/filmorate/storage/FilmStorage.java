@@ -28,4 +28,10 @@ public interface FilmStorage {
 
     Film save(Film film);
 
+    List<Film> getFilmsByDirectorSortedByYear(long directorId);
+
+    List<Film> getFilmsByDirectorSortedByLikes(long directorId);
+
+    List<Film> searchFilms(String query, List<String> by);
+
 }

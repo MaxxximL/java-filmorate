@@ -23,8 +23,12 @@ CREATE TABLE IF NOT EXISTS films (
     release_date DATE NOT NULL,
     duration BIGINT NOT NULL,
     mpa_id BIGINT,
-    FOREIGN KEY (mpa_id) REFERENCES mpa(id)
+    genre_id BIGINT,
+    FOREIGN KEY (mpa_id) REFERENCES mpa(id),
+    FOREIGN KEY (genre_id) REFERENCES genres (id)
+
 );
+
 
 CREATE TABLE IF NOT EXISTS film_likes (
     film_id BIGINT,
@@ -33,6 +37,21 @@ CREATE TABLE IF NOT EXISTS film_likes (
     FOREIGN KEY (film_id) REFERENCES films(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- Создание таблицы для режиссеров
+CREATE TABLE IF NOT EXISTS directors (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS film_directors (
+    film_id BIGINT NOT NULL,
+    director_id BIGINT NOT NULL,
+    PRIMARY KEY (film_id, director_id),
+    FOREIGN KEY (film_id) REFERENCES films(id),
+    FOREIGN KEY (director_id) REFERENCES directors(id)
+);
+
 
 CREATE TABLE IF NOT EXISTS user_friends (
     user_id BIGINT,

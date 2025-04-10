@@ -13,7 +13,8 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -69,22 +70,25 @@ public class UserService {
     }
 
 
-    public List<String> addFriend(long userId, long friendId) {
-        if (userStorage.getUser(userId) == null) {
+    public void addFriend(long userId, long friendId) {
+        // Check if users exist
+        User user = userStorage.getUser(userId);
+        if (user == null) {
             throw new EntityNotFoundException("User not found with ID: " + userId);
         }
-        if (userStorage.getUser(friendId) == null) {
+
+        User friend = userStorage.getUser(friendId);
+        if (friend == null) {
             throw new EntityNotFoundException("Friend not found with ID: " + friendId);
         }
 
-        // Проверяем, не является ли друг уже другом
+        // Check if already friends
         Set<Long> currentFriends = userStorage.getFriendsIds(userId);
         if (currentFriends.contains(friendId)) {
-            throw new ValidationException("Пользователь уже в списке друзей: " + friendId);
+            return; // Just return if they're already friends
         }
 
         userStorage.addFriend(userId, friendId);
-        return null;
     }
 
     public void removeFriend(long userId, long friendId) {

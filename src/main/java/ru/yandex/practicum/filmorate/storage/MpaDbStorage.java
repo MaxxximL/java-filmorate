@@ -30,4 +30,9 @@ public class MpaDbStorage implements MpaStorage {
             return null; // возвращаем null, если mpa не найден
         }
     }
+
+    @Override
+    public Long getIdOfMpa(Mpa mpa) {
+        return mpa.getId(); // Простой способ получить ID из объекта Mpa
+    }
 }

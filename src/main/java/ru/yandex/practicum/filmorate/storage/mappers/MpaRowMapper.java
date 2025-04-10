@@ -10,7 +10,6 @@ import java.sql.SQLException;
 @Component
 public class MpaRowMapper implements RowMapper<Mpa> {
 
-
     public Mpa mapRow(ResultSet rs, int rowNum) throws SQLException {
 
         return Mpa.builder()

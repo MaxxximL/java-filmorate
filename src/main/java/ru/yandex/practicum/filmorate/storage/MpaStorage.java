@@ -9,4 +9,6 @@ public interface MpaStorage {
     List<Mpa> getAllMpa();
 
     Mpa getMpa(Long id);
+
+    Long getIdOfMpa(Mpa mpa); // Добавляем новый метод
 }

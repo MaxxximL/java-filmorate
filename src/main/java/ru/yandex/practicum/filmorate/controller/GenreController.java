@@ -3,7 +3,10 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
@@ -28,7 +31,7 @@ public class GenreController {
     public ResponseEntity<Genre> getGenre(@PathVariable long id) {
         Genre genre = genreStorage.getGenre(id);
         if (genre == null) {
-            throw new EntityNotFoundException("Genre with id " + id + " not found.");
+            throw new EntityNotFoundException("Genre with id " + id + " not found."); // бросаем исключение, если жанр не найден
         }
         return ResponseEntity.ok(genre);
     }
