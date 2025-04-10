@@ -31,10 +31,13 @@ public class CreateFilmDto {
 
     private MpaDto mpa;
 
+    @Builder.Default
     private List<Long> genreIds = new ArrayList<>();
 
+    @Builder.Default
     private List<GenreDto> genres = new ArrayList<>();
 
+    @Builder.Default
     private List<DirectorDto> directors = new ArrayList<>();
 
 }
