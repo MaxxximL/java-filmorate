@@ -4,7 +4,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -12,9 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Builder
 public class User {
-
     private long id;
 
     @Email
@@ -30,5 +27,5 @@ public class User {
     private LocalDate birthday;
 
     // Добавляем поле для хранения id друзей
-    private final Set<Long> friends = new HashSet<>();
+    private Set<Long> friends = new HashSet<>();
 }
